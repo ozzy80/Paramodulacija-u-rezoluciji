@@ -145,13 +145,13 @@ atomic_formula : atom
 	       }
 	       ;
 
-atom : SYMBOL
+atom : VARIABLE
      {
        sig.addPredicateSymbol(*$1, 0);
        $$ = new Atom(sig, *$1);
        delete $1;
      }
-     | SYMBOL '(' term_seq ')'
+     | VARIABLE '(' term_seq ')'
      {
        sig.addPredicateSymbol(*$1, (*$3).size());
        $$ = new Atom(sig, *$1, *$3);
