@@ -23,8 +23,8 @@ Signature sig;
 %token OR;
 %token IMP;
 %token IFF;
-%token EQ;
-%token NEQ;
+%token<str_attr> EQ;
+%token<str_attr> NEQ;
 %token FORALL;
 %token EXISTS;
 
@@ -158,14 +158,18 @@ atom : VARIABLE
        delete $1;
        delete $3;
      }
-     /*| term EQ term 
+     | term EQ term
      {
-       $$ = new Equality(Term($1), Term($3));
+       sig.addPredicateSymbol(*$2, 2);
+       $$ = new Equality(sig, Term($1), Term($3));
+       delete $2;
      }
      | term NEQ term
      {
-       $$ = new Disequality(Term($1), Term($3));
-     }*/
+       sig.addPredicateSymbol(*$2, 2);
+       $$ = new Disequality(sig, Term($1), Term($3));
+       delete $2;
+     }
      ;
 
 term_seq : term_seq ',' term

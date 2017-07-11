@@ -210,7 +210,7 @@ public:
    znatno slozeniju strukturu. Svaki atom je predikatski simbol primenjen
    na odgovarajuci broj podtermova */
 class Atom : public AtomicFormula {
-private:
+protected:
   const Signature & _sig;
   PredicateSymbol _p;
   vector<Term> _ops;
@@ -234,10 +234,10 @@ public:
   virtual Formula substitute(const Substitution & sub);
 };
 
-/*class Equality : public Atom {
+class Equality : public Atom {
 public:
-  Equality(const Term & lop, const Term & rop)
-    :Atom("=", vector<Term> ());
+  Equality(const Signature & s, const Term & lop, const Term & rop)
+    :Atom(s, "=", {lop, rop}) {}
   
   const Term & getLeftOperand() const;
   
@@ -248,15 +248,15 @@ public:
 
 class Disequality : public Atom {
 public:
-  Disequality(const Term & lop, const Term & rop)
-    :Atom("~=", vector<Term> ());
+  Disequality(const Signature & s, const Term & lop, const Term & rop)
+    :Atom(s, "~=", {lop, rop}) {}
   
   const Term & getLeftOperand() const;
   
   const Term & getRightOperand() const;
 
   virtual void printFormula(ostream & ostr) const;
-};*/
+};
 
 /* Klasa unarni veznik (obuhvata negaciju) */
 class UnaryConjective : public BaseFormula {

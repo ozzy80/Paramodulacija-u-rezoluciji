@@ -361,7 +361,7 @@ void Atom::printFormula(ostream & ostr) const
     }
 }
 
-/* void Equality::printFormula(ostream & ostr) const
+ void Equality::printFormula(ostream & ostr) const
 {
   _ops[0]->printTerm(ostr);
   ostr << " = ";
@@ -375,7 +375,7 @@ void Disequality::printFormula(ostream & ostr) const
   ostr << " ~= ";
   _ops[1]->printTerm(ostr);
 }
-*/
+
 void Not::printFormula(ostream & ostr) const
 { 
   ostr << "~";
@@ -1353,14 +1353,6 @@ BaseFormula::Type Atom::getType() const
 // Klase Equality i Disequality ------------------------------------------
 // -----------------------------------------------------------------------
 
-/*
-Equality::Equality(const Term & lop, const Term & rop)
-  :Atom("=", vector<Term> ())
-{
-  _ops.push_back(lop);
-  _ops.push_back(rop);
-}
-
 const Term & Equality::getLeftOperand() const
 {
   return _ops[0];
@@ -1369,13 +1361,6 @@ const Term & Equality::getLeftOperand() const
 const Term & Equality::getRightOperand() const
 {
   return _ops[1];
-}
-
-Disequality::Disequality(const Term & lop, const Term & rop)
-  :Atom("~=", vector<Term> ())
-{
-  _ops.push_back(lop);
-  _ops.push_back(rop);
 }
 
 const Term & Disequality::getLeftOperand() const
@@ -1387,7 +1372,7 @@ const Term & Disequality::getRightOperand() const
 {
   return _ops[1];
 }
-*/
+
 // Klasa UnaryConjective -------------------------------------------------
 
 UnaryConjective::UnaryConjective(const Formula & op)
