@@ -141,7 +141,7 @@ public:
      kod kojih je vodeci simbol univerzalni ili egzistencijalni
      kvantifikator */
   enum Type { T_TRUE, T_FALSE, T_ATOM, T_NOT, 
-	      T_AND, T_OR, T_IMP, T_IFF, T_FORALL, T_EXISTS };
+              T_AND, T_OR, T_IMP, T_IFF, T_FORALL, T_EXISTS, T_EQUAL, T_DISEQUAL };
   
   /* Prikaz formule */ 
   virtual void printFormula(ostream & ostr) const = 0;
@@ -243,6 +243,10 @@ public:
   
   const Term & getRightOperand() const;
 
+  virtual Type getType() const;
+  virtual bool equalTo(const Formula & f) const;
+  virtual Formula substitute(const Substitution & sub);
+
   virtual void printFormula(ostream & ostr) const;
 };
 
@@ -254,6 +258,10 @@ public:
   const Term & getLeftOperand() const;
   
   const Term & getRightOperand() const;
+
+  virtual Type getType() const;
+  virtual bool equalTo(const Formula & f) const;
+  virtual Formula substitute(const Substitution & sub);
 
   virtual void printFormula(ostream & ostr) const;
 };
@@ -476,6 +484,10 @@ void concatClauses(const Clause & c1, const Clause & c2, Clause & cr);
 void resolveClauses(const Clause & c1, const Clause & c2, 
 		    unsigned i, unsigned j, 
 		    const Substitution & sub, Clause & res);
+/**/
+void resolveClauses(const Clause & c1, const Clause & c2,
+                    unsigned i,
+                    const Substitution & sub, Clause & res);
 
 /* Ispituje da li je moguce primeniti pravilo rezolucije nad klauzama k i l
    i ako je moguce, primenjuje ga na sve moguce nacine i dodaje dobijene klauze
