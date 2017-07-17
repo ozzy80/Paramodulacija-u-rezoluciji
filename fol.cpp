@@ -1343,7 +1343,6 @@ Formula Forall::skolem(Signature & s, vector<Variable> && vars)
   /* Ako je formula oblika (forall x) A, tada samo dodajemo varijablu
      x u sekvencu univerzalno kvantifikovanih varijabli, i zatim pozivamo
      rekurzivni poziv za podformulu */
-    cout << "aaaaaaaaaaaaaaaaaaa" << endl;
   vars.push_back(_v);
   return make_shared<Forall>(_v, _op->skolem(s, std::move(vars)));
 }
@@ -1354,7 +1353,6 @@ Formula Exists::skolem(Signature & s, vector<Variable> && vars)
      tada je potrebno eliminisati ga, uvodjenjem novog funkcijskog simbola 
      u signaturu, pa zato najpre uvodimo novi simbol koji nije prisutan u 
      signaturu s */
-    cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
 
   FunctionSymbol f = getUniqueFunctionSymbol(s);
   
@@ -1375,15 +1373,12 @@ Formula Exists::skolem(Signature & s, vector<Variable> && vars)
   /* Kreiramo term f(x1,...,xk) */
   Term t = make_shared<FunctionTerm>(s, f, varTerms);
 
-
-  cout << "aaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaa" << endl;
   /* Zamenjujemo u podformuli y -> f(x1,...,xk), a zatim nastavljamo
      rekurzivno skolemizaciju u podformuli. */
   cout << _v << " " << t << endl;
 
   Formula tmp = _op->substitute(_v, t);
 
-  cout << "aaa--------------" << endl;
   return tmp->skolem(s, std::move(vars));
 }
 

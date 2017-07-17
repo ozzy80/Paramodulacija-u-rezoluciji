@@ -10,7 +10,7 @@ extern Signature sig;
 
 int main()
 {
-         /*Signature s;
+         Signature s;
          Substitution sub;
          s.addPredicateSymbol("=", 2);
          s.addPredicateSymbol("~=", 2);
@@ -20,7 +20,7 @@ int main()
          s.addFunctionSymbol("b",0);
          s.addPredicateSymbol("n",1);
 
-         CNF cnf(5);
+         CNF cnf(7);
 
          Term u = make_shared<VariableTerm>("u");
          Term w = make_shared<VariableTerm>("w");
@@ -54,7 +54,7 @@ int main()
          cnf[3].push_back(nb);
 
          Formula arb = make_shared<Disequality>(s, a, b);
-         cnf[4].push_back(arb);*/
+         cnf[4].push_back(arb);
 
            /*8) f(a, w) = w     (2, 5)
            9) f(w, a) = w     (3, 5)
@@ -62,23 +62,23 @@ int main()
            11) f(w, b) = w    (3, 6)
            12) a = b          (Paramodulacija, 11, 8)*/
 
-         /*  Term faw = make_shared<FunctionTerm>(s, "f", vector<Term>{{a,w}});
+           Term faw = make_shared<FunctionTerm>(s, "f", vector<Term>{{a,w}});
            Formula fawEw = make_shared<Equality>(s, faw, w);
            Term fwb = make_shared<FunctionTerm>(s, "f", vector<Term>{{w,b}});
            Formula fwbEw = make_shared<Equality>(s, fwb, w);
            cnf[5].push_back(fawEw);
-           cnf[6].push_back(fwbEw);*/
+           cnf[6].push_back(fwbEw);
 
-           /*if(resolution(cnf))
+           if(resolution(cnf))
              {
                cout << "CNF satisfiable!" << endl;
              }
            else
              {
                cout << "CNF unsatisfiable!" << endl;
-             }*/
+             }
 
-    yyparse();
+    /*yyparse();
 
     if(parsed_formula.get() != 0)
       cout << parsed_formula;
@@ -87,10 +87,7 @@ int main()
     cout << parsed_formula->simplify()->nnf() << endl;
     cout << parsed_formula->simplify()->nnf()->pullquants()->prenex() << endl;
     cout << parsed_formula->simplify()->nnf()->pullquants()->prenex()->skolem(sig) << endl;
-
-    /*pf = f->simplify()->nnf()->pullquants()->prenex();
-    cout << pf << endl;
-    pf = f->simplify()->nnf()->pullquants()->prenex()->skolem(s);*/
+    */
 
 
   return 0;
