@@ -811,7 +811,7 @@ ostream & operator << (ostream & ostr, const Clause & c)
     {
       ostr << c[i];
       if(i != c.size() - 1)
-	ostr << ", ";
+        ostr << ", ";
     }
   ostr << " }";
   return ostr;
@@ -824,7 +824,7 @@ ostream & operator << (ostream & ostr, const CNF & cnf)
     {
       ostr << cnf[i];
       if(i != cnf.size() - 1)
-	ostr << ", ";
+        ostr << ", ";
     }
   ostr << " }";
   return ostr;
@@ -846,13 +846,13 @@ bool clauseContainsVariable(const Clause & c, const Variable & v)
 Variable getUniqueVariable(const Clause & c1, const Clause & c2)
 {
   static unsigned i;
-  
+
   Variable v;
-  
+
   do {
     v = string("cv") + to_string(++i);
   } while(clauseContainsVariable(c1, v) || clauseContainsVariable(c2, v));
-  
+
   return v;
 }
 
@@ -872,12 +872,12 @@ bool clauseSubsumed(const Clause & c1, const Clause & c2)
   for(unsigned i = 0; i < c1.size(); i++)
     {
       if(!clauseContainsLiteral(c2, c1[i]))
-	return false;
+        return false;
     }
   return true;
 }
 
- 
+
 Formula oppositeLiteral(const Formula & l)
 {
   if(l->getType() == BaseFormula::T_NOT)
@@ -905,7 +905,7 @@ bool clauseExists(const CNF & cnf, const Clause & c)
   for(unsigned i = 0; i < cnf.size(); i++)
     {
       if(clauseSubsumed(cnf[i], c))
-	return true;
+        return true;
     }
   return false;
 }
@@ -936,9 +936,9 @@ void concatClauses(const Clause & c1, const Clause & c2, Clause & cr)
     cr.push_back(c2[i]);
 }
 
-void resolveClauses(const Clause & c1, const Clause & c2, 
-		    unsigned i, unsigned j, 
-		    const Substitution & sub, Clause & res)
+void resolveClauses(const Clause & c1, const Clause & c2,
+                    unsigned i, unsigned j,
+                    const Substitution & sub, Clause & res)
 {
   Clause c1p = c1;
   Clause c2p = c2;
@@ -958,7 +958,7 @@ void resolveClauses(const Clause & c1, const Clause & c2,
   substituteClause(res, sub);
 }
 
-bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)	
+bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
 {
   VariableSet vars;
   bool ret = false;
@@ -969,114 +969,100 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
   for(auto it = vars.cbegin(); it != vars.cend(); it++)
     {
       if(clauseContainsVariable(c1, *it))
-	{
-	  Variable new_v = getUniqueVariable(c1, c2);
-	  substituteClause(c2, *it, make_shared<VariableTerm>(new_v));
-	}
+        {
+          Variable new_v = getUniqueVariable(c1, c2);
+          substituteClause(c2, *it, make_shared<VariableTerm>(new_v));
+        }
     }
 
   for(unsigned i = 0; i < c1.size(); i++)
     for(unsigned j = 0; j < c2.size(); j++)
       {
-	if(c1[i]->getType() == BaseFormula::T_ATOM &&
-	   c2[j]->getType() == BaseFormula::T_NOT)
-	  {
-	    Formula c1a =  c1[i];
-	    Formula c2n = c2[j];
-	    Formula c2a = ((Not*)c2n.get())->getOperand();
-	    
-	    Substitution sub;
-	    if(unify(c1a, c2a, sub))
-	      {
-		Clause r;
-		resolveClauses(c1, c2, i, j, sub, r);
-		if(!clauseExists(cnf, r) && !clauseTautology(r))
-		  {
-		    cnf.push_back(r);
+        if(c1[i]->getType() == BaseFormula::T_ATOM &&
+           c2[j]->getType() == BaseFormula::T_NOT)
+          {
+            Formula c1a =  c1[i];
+            Formula c2n = c2[j];
+            Formula c2a = ((Not*)c2n.get())->getOperand();
+
+            Substitution sub;
+            if(unify(c1a, c2a, sub))
+              {
+                Clause r;
+                resolveClauses(c1, c2, i, j, sub, r);
+                if(!clauseExists(cnf, r) && !clauseTautology(r))
+                  {
+                    cnf.push_back(r);
                     cout << r << endl;
-		    cout << "Resolution applied: " << k << ", " << l << endl;
-		    cout << "Parent clauses: " << c1 << ", " << c2 << endl;
-		    cout << "Substitution: " << sub << endl;
-		    cout << "Resolvent: " << r << endl;
-		    cout << cnf << endl;
-		    ret = true;
-		  }
-	      }
-	  }
-	else if(c1[i]->getType() == BaseFormula::T_NOT &&
-		c2[j]->getType() == BaseFormula::T_ATOM)
-	  {
-	    Formula c2a =  c2[j];
-	    Formula c1n =  c1[i];
-	    Formula c1a =  ((Not*)c1n.get())->getOperand();
-	    
-	    Substitution sub;
-	    if(unify(c1a, c2a, sub))
-	      {
-		Clause r;
-		resolveClauses(c1, c2, i, j, sub, r);
-		if(!clauseExists(cnf, r) && !clauseTautology(r))
-		  {
-		    cnf.push_back(r);
-		    cout << "Resolution applied: " << k << ", " << l << endl;
-		    cout << "Parent clauses: " << c1 << ", " << c2 << endl;
-		    cout << "Substitution: " << sub << endl;
-		    cout << "Resolvent: " << r << endl;
-		    cout << cnf << endl;
-		    ret = true;
-		  }
-	      }
-	  }
-        else if(c1[i]->getType() == BaseFormula::T_EQUAL &&
-                c2[j]->getType() == BaseFormula::T_DISEQUAL)
-               {
-                 Formula c1e = c1[i];
-                 Formula c2d = c2[j];
-                 //Formula c2a = ((Not*)c2n.get())->getOperand();
+                    cout << "Resolution applied: " << k << ", " << l << endl;
+                    cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                    cout << "Substitution: " << sub << endl;
+                    cout << "Resolvent: " << r << endl;
+                   // cout << cnf << endl;
+                    ret = true;
+                  }
+              }
+          }
+        else if(c1[i]->getType() == BaseFormula::T_NOT &&
+                c2[j]->getType() == BaseFormula::T_ATOM)
+          {
+            Formula c2a =  c2[j];
+            Formula c1n =  c1[i];
+            Formula c1a =  ((Not*)c1n.get())->getOperand();
 
-                 Substitution sub;
-                 if(unify(c1e, c2d, sub))
-                   {
-                     Clause r;
-                     resolveClauses(c1, c2, i, j, sub, r);
-                     if(!clauseExists(cnf, r) && !clauseTautology(r))
-                       {
-                         cnf.push_back(r);
-                         cout << r << endl;
-                         cout << "Resolution applied: " << k << ", " << l << endl;
-                         cout << "Parent clauses: " << c1 << ", " << c2 << endl;
-                         cout << "Substitution: " << sub << endl;
-                         cout << "Resolvent: " << r << endl;
-                         cout << cnf << endl;
-                         ret = true;
-                       }
-                   }
-               }
-        else if(c1[i]->getType() == BaseFormula::T_DISEQUAL &&
-                c2[j]->getType() == BaseFormula::T_EQUAL)
+            Substitution sub;
+            if(unify(c1a, c2a, sub))
+              {
+                Clause r;
+                resolveClauses(c1, c2, i, j, sub, r);
+                if(!clauseExists(cnf, r) && !clauseTautology(r))
+                  {
+                    cnf.push_back(r);
+                    cout << "Resolution applied: " << k << ", " << l << endl;
+                    cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                    cout << "Substitution: " << sub << endl;
+                    cout << "Resolvent: " << r << endl;
+                    //cout << cnf << endl;
+                    ret = true;
+                  }
+              }
+          }
+        else if((c1[i]->getType() == BaseFormula::T_EQUAL &&
+                  c2[j]->getType() == BaseFormula::T_DISEQUAL)
+                        ||
+                                (c1[i]->getType() == BaseFormula::T_DISEQUAL &&
+                                  c2[j]->getType() == BaseFormula::T_EQUAL))
                {
-                 Formula c1e = c1[i];
-                 Formula c2d = c2[j];
-                 //Formula c2a = ((Not*)c2n.get())->getOperand();
+                Substitution sub;
+                Equality* tmp = (Equality*)c1[i].get();
+                Formula reverse;
 
-                 Substitution sub;
-                 if(unify(c1e, c2d, sub))
-                   {
-                     Clause r;
-                     resolveClauses(c1, c2, i, j, sub, r);
-                     if(!clauseExists(cnf, r) && !clauseTautology(r))
-                       {
-                         cnf.push_back(r);
-                         cout << r << endl;
-                         cout << "Resolution applied: " << k << ", " << l << endl;
-                         cout << "Parent clauses: " << c1 << ", " << c2 << endl;
-                         cout << "Substitution: " << sub << endl;
-                         cout << "Resolvent: " << r << endl;
-                         cout << cnf << endl;
-                         ret = true;
-                       }
-                   }
-               }
+                if(c1[i]->getType() == BaseFormula::T_EQUAL)
+                    reverse = make_shared<Equality>(tmp->getSignature(), tmp->getRightOperand(), tmp->getLeftOperand());
+                else
+                    reverse = make_shared<Disequality>(tmp->getSignature(), tmp->getRightOperand(), tmp->getLeftOperand());
+
+                if(unify(c1[i], oppositeLiteral(c2[j]), sub) || unify(reverse, oppositeLiteral(c2[j]), sub)){
+                         Clause r;
+                         resolveClauses(c1, c2, i, j, sub, r);
+                         if(!clauseExists(cnf, r) && !clauseTautology(r))
+                           {
+                                 cnf.push_back(r);
+                                 cout << r << endl;
+                                 cout << "Resolution applied: " << k << ", " << l << endl;
+                                 cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                                 cout << "Substitution: " << sub << endl;
+                                 cout << "Resolvent: " << r << endl;
+                                // cout << cnf << endl;
+                                 if(r.empty())
+                                 {
+                                     prematureB = true;
+                                     return true;
+                                 }
+                                 ret = true;
+                           }
+                }
+          }
         else if(c1[i]->getType() == BaseFormula::T_EQUAL)
           {
             Substitution sub;
@@ -1085,16 +1071,12 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
             Term t =  ((Equality*)c1e.get())->getLeftOperand();
             Term s =  ((Equality*)c1e.get())->getRightOperand();
 
-            cout << "t: " << t << endl;
-            cout << "s: " << s << endl;
-
             if(c2[j]->getType() == BaseFormula::T_NOT)
             {
                 Formula tmp =  ((Not*)c2[j].get())->getOperand();
                 vector<Term> c2n = ((Atom*)tmp.get())->getOperands();
                 for(unsigned ii=0; ii < c2n.size(); ++ii)
                 {
-                    // da li treba da unifikujemo samo sa prvim na koji naidjemo?
                     if(unify(t, c2n[ii], sub))
                     {
                         c2n[ii] = s;
@@ -1103,7 +1085,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                         tmpClause[j] = make_shared<Not>(tmpAtom);
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c1, tmpClause, i, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
@@ -1111,8 +1093,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                            //cout << cnf << endl;
                             ret = true;
                             break;
                           }
@@ -1125,7 +1106,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                         tmpClause[j] = make_shared<Not>(tmpAtom);
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c1, tmpClause, i, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
@@ -1133,22 +1114,18 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                            //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
                 }
             }
-            else if(c2[j]->getType() == BaseFormula::T_ATOM ||
-                    c2[j]->getType() == BaseFormula::T_EQUAL ||
-                    c2[j]->getType() == BaseFormula::T_DISEQUAL)
+            else if(c2[j]->getType() == BaseFormula::T_ATOM)
             {
                 vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
                 for(unsigned ii=0; ii < c2n.size(); ++ii)
                 {
-                    // da li treba da unifikujemo samo sa prvim na koji naidjemo?
                     if(unify(t, c2n[ii], sub))
                     {
                         c2n[ii] = s;
@@ -1157,7 +1134,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                         tmpClause[j] = tmpAtom;
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c1, tmpClause, i, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
@@ -1165,8 +1142,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                          //cout << cnf << endl;
                             ret = true;
                             break;
                           }
@@ -1179,7 +1155,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                         tmpClause[j] = tmpAtom;
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c1, tmpClause, i, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
@@ -1187,155 +1163,344 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l)
                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                            //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
                 }
             }
+            else if(c2[j]->getType() == BaseFormula::T_EQUAL)
+            {
+                vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
+                for(unsigned ii=0; ii < c2n.size(); ++ii)
+                {
+                    if(unify(t, c2n[ii], sub))
+                    {
+                        c2n[ii] = s;
+                        Formula tmpAtom = make_shared<Equality>(((Atom*)c2[j].get())->getSignature(), c2n[0], c2n[1]);
+                        Clause tmpClause = c2;
+                        tmpClause[j] = tmpAtom;
+
+                        Clause r;
+                        resolveClauses(c1, tmpClause, i, sub, r);
+                        if(!clauseExists(cnf, r) && !clauseTautology(r))
+                          {
+                            cnf.push_back(r);
+                            cout << "Resolution applied: " << k << ", " << l << endl;
+                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Substitution: " << sub << endl;
+                            cout << "Resolvent: " << r << endl;
+                          //cout << cnf << endl;
+                            ret = true;
+                            break;
+                          }
+                    }
+                    else if(unify(s, c2n[ii], sub))
+                    {
+                        c2n[ii] = t;
+                        Formula tmpAtom = make_shared<Equality>(((Atom*)c2[j].get())->getSignature(), c2n[0], c2n[1]);
+                        Clause tmpClause = c2;
+                        tmpClause[j] = tmpAtom;
+
+                        Clause r;
+                        resolveClauses(c1, tmpClause, i, sub, r);
+                        if(!clauseExists(cnf, r) && !clauseTautology(r))
+                          {
+                            cnf.push_back(r);
+                            cout << "Resolution applied: " << k << ", " << l << endl;
+                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Substitution: " << sub << endl;
+                            cout << "Resolvent: " << r << endl;
+                          //cout << cnf << endl;
+                            ret = true;
+                            break;
+                          }
+                    }
+                }
+            }
+            else if(c2[j]->getType() == BaseFormula::T_DISEQUAL)
+             {
+                 vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
+                 for(unsigned ii=0; ii < c2n.size(); ++ii)
+                 {
+                     if(unify(t, c2n[ii], sub))
+                     {
+                         c2n[ii] = s;
+                         Formula tmpAtom = make_shared<Disequality>(((Atom*)c2[j].get())->getSignature(), c2n[0], c2n[1]);
+                         Clause tmpClause = c2;
+                         tmpClause[j] = tmpAtom;
+
+                         Clause r;
+                         resolveClauses(c1, tmpClause, i, sub, r);
+                         if(!clauseExists(cnf, r) && !clauseTautology(r))
+                           {
+                             cnf.push_back(r);
+                             cout << "Resolution applied: " << k << ", " << l << endl;
+                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                             cout << "Substitution: " << sub << endl;
+                             cout << "Resolvent: " << r << endl;
+                           //cout << cnf << endl;
+                             ret = true;
+                             break;
+                           }
+                     }
+                     else if(unify(s, c2n[ii], sub))
+                     {
+                         c2n[ii] = t;
+                         Formula tmpAtom = make_shared<Disequality>(((Atom*)c2[j].get())->getSignature(), c2n[0], c2n[1]);
+                         Clause tmpClause = c2;
+                         tmpClause[j] = tmpAtom;
+
+                         Clause r;
+                         resolveClauses(c1, tmpClause, i, sub, r);
+                         if(!clauseExists(cnf, r) && !clauseTautology(r))
+                           {
+                             cnf.push_back(r);
+                             cout << "Resolution applied: " << k << ", " << l << endl;
+                             cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                             cout << "Substitution: " << sub << endl;
+                             cout << "Resolvent: " << r << endl;
+                           //cout << cnf << endl;
+                             ret = true;
+                             break;
+                           }
+                     }
+                 }
+             }
+
           }
-        //obrnuto(sutra)
-      /*  else if(c1[i]->getType() == BaseFormula::T_EQUAL)
+        else if(c2[j]->getType() == BaseFormula::T_EQUAL)
           {
             Substitution sub;
-            Formula c1e =  c1[i];
+            Formula c2e =  c2[j];
 
-            Term t =  ((Equality*)c1e.get())->getLeftOperand();
-            Term s =  ((Equality*)c1e.get())->getRightOperand();
+            Term t =  ((Equality*)c2e.get())->getLeftOperand();
+            Term s =  ((Equality*)c2e.get())->getRightOperand();
 
-            cout << "t: " << t << endl;
-            cout << "s: " << s << endl;
-
-            if(c2[j]->getType() == BaseFormula::T_NOT)
+            if(c1[i]->getType() == BaseFormula::T_NOT)
             {
-                Formula tmp =  ((Not*)c2[j].get())->getOperand();
-                vector<Term> c2n = ((Atom*)tmp.get())->getOperands();
-                for(unsigned ii=0; ii < c2n.size(); ++ii)
+                Formula tmp =  ((Not*)c1[i].get())->getOperand();
+                vector<Term> c1n = ((Atom*)tmp.get())->getOperands();
+                for(unsigned ii=0; ii < c1n.size(); ++ii)
                 {
-                    // da li treba da unifikujemo samo sa prvim na koji naidjemo?
-                    if(unify(t, c2n[ii], sub))
+                    if(unify(t, c1n[ii], sub))
                     {
-                        c2n[ii] = s;
-                        Formula tmpAtom = make_shared<Atom>(((Atom*)tmp.get())->getSignature(), ((Atom*)tmp.get())->getSymbol(), c2n);
-                        Clause tmpClause = c2;
-                        tmpClause[j] = make_shared<Not>(tmpAtom);
+                        c1n[ii] = s;
+                        Formula tmpAtom = make_shared<Atom>(((Atom*)tmp.get())->getSignature(), ((Atom*)tmp.get())->getSymbol(), c1n);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = make_shared<Not>(tmpAtom);
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c2, tmpClause, j, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
                             cout << "Resolution applied: " << k << ", " << l << endl;
-                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                          //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
-                    else if(unify(s, c2n[ii], sub))
+                    else if(unify(s, c1n[ii], sub))
                     {
-                        c2n[ii] = t;
-                        Formula tmpAtom = make_shared<Atom>(((Atom*)tmp.get())->getSignature(), ((Atom*)tmp.get())->getSymbol(), c2n);
-                        Clause tmpClause = c2;
-                        tmpClause[j] = make_shared<Not>(tmpAtom);
+                        c1n[ii] = t;
+                        Formula tmpAtom = make_shared<Atom>(((Atom*)tmp.get())->getSignature(), ((Atom*)tmp.get())->getSymbol(), c1n);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = make_shared<Not>(tmpAtom);
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c2, tmpClause, j, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
                             cout << "Resolution applied: " << k << ", " << l << endl;
-                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                          //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
                 }
             }
-            else if(c2[j]->getType() == BaseFormula::T_ATOM ||
-                    c2[j]->getType() == BaseFormula::T_EQUAL ||
-                    c2[j]->getType() == BaseFormula::T_DISEQUAL)
+            else if(c1[i]->getType() == BaseFormula::T_ATOM)
             {
-                vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
-                for(unsigned ii=0; ii < c2n.size(); ++ii)
+                vector<Term> c1n = ((Atom*)c1[i].get())->getOperands();
+                for(unsigned ii=0; ii < c1n.size(); ++ii)
                 {
                     // da li treba da unifikujemo samo sa prvim na koji naidjemo?
-                    if(unify(t, c2n[ii], sub))
+                    if(unify(t, c1n[ii], sub))
                     {
-                        c2n[ii] = s;
-                        Formula tmpAtom = make_shared<Atom>(((Atom*)c2[j].get())->getSignature(), ((Atom*)c2[j].get())->getSymbol(), c2n);
-                        Clause tmpClause = c2;
-                        tmpClause[j] = tmpAtom;
+                        c1n[ii] = s;
+                        Formula tmpAtom = make_shared<Atom>(((Atom*)c1[i].get())->getSignature(), ((Atom*)c1[i].get())->getSymbol(), c1n);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = tmpAtom;
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c2, tmpClause, j, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
                             cout << "Resolution applied: " << k << ", " << l << endl;
-                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                          //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
-                    else if(unify(s, c2n[ii], sub))
+                    else if(unify(s, c1n[ii], sub))
                     {
-                        c2n[ii] = t;
-                        Formula tmpAtom = make_shared<Atom>(((Atom*)c2[j].get())->getSignature(), ((Atom*)c2[j].get())->getSymbol(), c2n);
-                        Clause tmpClause = c2;
-                        tmpClause[j] = tmpAtom;
+                        c1n[ii] = t;
+                        Formula tmpAtom = make_shared<Atom>(((Atom*)c1[i].get())->getSignature(), ((Atom*)c1[i].get())->getSymbol(), c1n);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = tmpAtom;
 
                         Clause r;
-                        resolveClauses(c1, tmpClause, i, sub, r);//!
+                        resolveClauses(c2, tmpClause, j, sub, r);
                         if(!clauseExists(cnf, r) && !clauseTautology(r))
                           {
                             cnf.push_back(r);
                             cout << "Resolution applied: " << k << ", " << l << endl;
-                            cout << "Parent clauses: " << c1 << ", " << c2 << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
                             cout << "Substitution: " << sub << endl;
                             cout << "Resolvent: " << r << endl;
-                            cout << "NASE" << endl;
-                            cout << cnf << endl;
+                          //cout << cnf << endl;
                             ret = true;
                             break;
                           }
                     }
                 }
             }
-          }*/
-      }  
+            else if(c1[i]->getType() == BaseFormula::T_EQUAL)
+            {
+                vector<Term> c1n = ((Atom*)c1[i].get())->getOperands();
+                for(unsigned ii=0; ii < c1n.size(); ++ii)
+                {
+                    if(unify(t, c1n[ii], sub))
+                    {
+                        c1n[ii] = s;
+                        Formula tmpAtom = make_shared<Equality>(((Atom*)c1[i].get())->getSignature(), c1n[0], c1n[1]);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = tmpAtom;
+
+                        Clause r;
+                        resolveClauses(c2, tmpClause, j, sub, r);
+                        if(!clauseExists(cnf, r) && !clauseTautology(r))
+                          {
+                            cnf.push_back(r);
+                            cout << "Resolution applied: " << k << ", " << l << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
+                            cout << "Substitution: " << sub << endl;
+                            cout << "Resolvent: " << r << endl;
+                          //cout << cnf << endl;
+                            ret = true;
+                            break;
+                          }
+                    }
+                    else if(unify(s, c1n[ii], sub))
+                    {
+                        c1n[ii] = t;
+                        Formula tmpAtom = make_shared<Equality>(((Atom*)c1[i].get())->getSignature(), c1n[0], c1n[1]);
+                        Clause tmpClause = c1;
+                        tmpClause[i] = tmpAtom;
+
+                        Clause r;
+                        resolveClauses(c2, tmpClause, j, sub, r);
+                        if(!clauseExists(cnf, r) && !clauseTautology(r))
+                          {
+                            cnf.push_back(r);
+                            cout << "Resolution applied: " << k << ", " << l << endl;
+                            cout << "Parent clauses: " << c2 << ", " << c1 << endl;
+                            cout << "Substitution: " << sub << endl;
+                            cout << "Resolvent: " << r << endl;
+                          //cout << cnf << endl;
+                            ret = true;
+                            break;
+                          }
+                    }
+                }
+            }
+            else if(c1[i]->getType() == BaseFormula::T_DISEQUAL)
+             {
+                 vector<Term> c1n = ((Atom*)c1[i].get())->getOperands();
+                 for(unsigned ii=0; ii < c1n.size(); ++ii)
+                 {
+                     if(unify(t, c1n[ii], sub))
+                     {
+                         c1n[ii] = s;
+                         Formula tmpAtom = make_shared<Disequality>(((Atom*)c1[i].get())->getSignature(), c1n[0], c1n[1]);
+                         Clause tmpClause = c1;
+                         tmpClause[i] = tmpAtom;
+
+                         Clause r;
+                         resolveClauses(c2, tmpClause, j, sub, r);
+                         if(!clauseExists(cnf, r) && !clauseTautology(r))
+                           {
+                             cnf.push_back(r);
+                             cout << "Resolution applied: " << k << ", " << l << endl;
+                             cout << "Parent clauses: " << c2 << ", " << c1 << endl;
+                             cout << "Substitution: " << sub << endl;
+                             cout << "Resolvent: " << r << endl;
+                           //cout << cnf << endl;
+                             ret = true;
+                             break;
+                           }
+                     }
+                     else if(unify(s, c1n[ii], sub))
+                     {
+                         c1n[ii] = t;
+                         Formula tmpAtom = make_shared<Disequality>(((Atom*)c1[i].get())->getSignature(), c1n[0], c1n[1]);
+                         Clause tmpClause = c1;
+                         tmpClause[i] = tmpAtom;
+
+                         Clause r;
+                         resolveClauses(c2, tmpClause, j, sub, r);
+                         if(!clauseExists(cnf, r) && !clauseTautology(r))
+                           {
+                             cnf.push_back(r);
+                             cout << "Resolution applied: " << k << ", " << l << endl;
+                             cout << "Parent clauses: " << c2 << ", " << c1 << endl;
+                             cout << "Substitution: " << sub << endl;
+                             cout << "Resolvent: " << r << endl;
+                           //cout << cnf << endl;
+                             ret = true;
+                             break;
+                           }
+                     }
+                 }
+             }
+
+          }
+      }
   return ret;
 }
 
 bool resolventFound(CNF & cnf, unsigned & i, unsigned & j)
 {
   bool ret = false;
+  bool prematureB = false;
   while(j < cnf.size())
     {
-      if(tryResolveClauses(cnf, i, j))
-	{	  
-	  ret = true;
-	}
+      if(tryResolveClauses(cnf, i, j, prematureB))
+        {
+          ret = true;
+          if(prematureB)
+              return ret;
+        }
 
       if(i < j - 1)
-	i++;
+        i++;
       else
-	{
-	  i = 0; j++;
-	}	       
+        {
+          i = 0; j++;
+        }
     }
   return ret;
 }
@@ -1354,57 +1519,11 @@ bool tryGroupLiterals(CNF & cnf, unsigned k)
   for(unsigned i = 0; i < c.size(); i++)
     for(unsigned j = i + 1; j < c.size(); j++)
       {
-	Substitution sub;
-	if(c[i]->getType() == BaseFormula::T_ATOM &&
-	   c[j]->getType() == BaseFormula::T_ATOM)
-	  {
-	    if(unify(c[i], c[j], sub))
-	      {
-		Clause r;
-		groupLiterals(c, j, sub, r);
-		if(!clauseExists(cnf, r) && !clauseTautology(r))
-		  {
-		    cnf.push_back(r);
-		    cout << "Grouping applied: " << k << endl;
-		    cout << "Parent clause: " << c << endl;
-		    cout << "Substitution: " << sub << endl;
-		    cout << "Grouped clause: " << r << endl;
-		    cout << cnf << endl;
-		    ret = true;
-		  }
-	      }	   
-	  }
-	else if(c[i]->getType() == BaseFormula::T_NOT &&
-		c[j]->getType() == BaseFormula::T_NOT)
-	  {
-	    Formula cia =  ((Not*)c[i].get())->getOperand();
-	    Formula cja =  ((Not*)c[j].get())->getOperand();
-	    if(unify(cia, cja, sub))
-	      {
-		Clause r;
-		groupLiterals(c, j, sub, r);
-		if(!clauseExists(cnf, r) && !clauseTautology(r))
-		  {
-		    cnf.push_back(r);
-		    cout << "Grouping applied: " << k << endl;
-		    cout << "Parent clause: " << c << endl;
-		    cout << "Substitution: " << sub << endl;
-		    cout << "Grouped clause: " << r << endl;
-		    cout << cnf << endl;
-		    ret = true;
-		  }
-	      }	   	    
-          }
-        else if(c[i]->getType() == BaseFormula::T_EQUAL &&
-                c[j]->getType() == BaseFormula::T_EQUAL)
+        Substitution sub;
+        if(c[i]->getType() == BaseFormula::T_ATOM &&
+           c[j]->getType() == BaseFormula::T_ATOM)
           {
-            Term cit =  ((Equality*)c[i].get())->getLeftOperand();
-            Term cis =  ((Equality*)c[i].get())->getRightOperand();
-
-            Term cjt =  ((Equality*)c[j].get())->getLeftOperand();
-            Term cjs =  ((Equality*)c[j].get())->getRightOperand();
-
-        /*    if(unify(cja, cja, sub))
+            if(unify(c[i], c[j], sub))
               {
                 Clause r;
                 groupLiterals(c, j, sub, r);
@@ -1415,24 +1534,84 @@ bool tryGroupLiterals(CNF & cnf, unsigned k)
                     cout << "Parent clause: " << c << endl;
                     cout << "Substitution: " << sub << endl;
                     cout << "Grouped clause: " << r << endl;
-                    cout << cnf << endl;
+                   // cout << cnf << endl;
                     ret = true;
                   }
-              }*/
+              }
           }
+        else if(c[i]->getType() == BaseFormula::T_NOT &&
+                c[j]->getType() == BaseFormula::T_NOT)
+          {
+            Formula cia =  ((Not*)c[i].get())->getOperand();
+            Formula cja =  ((Not*)c[j].get())->getOperand();
+            if(unify(cia, cja, sub))
+              {
+                        Clause r;
+                        groupLiterals(c, j, sub, r);
+                        if(!clauseExists(cnf, r) && !clauseTautology(r))
+                          {
+                                cnf.push_back(r);
+                                cout << "Grouping applied: " << k << endl;
+                                cout << "Parent clause: " << c << endl;
+                                cout << "Substitution: " << sub << endl;
+                                cout << "Grouped clause: " << r << endl;
+                               // cout << cnf << endl;
+                                ret = true;
+                          }
+              }
+       }
+        else if(c[i]->getType() == BaseFormula::T_EQUAL &&
+                c[j]->getType() == BaseFormula::T_EQUAL)
+          {
+
+            if(unify(c[i], c[j], sub))
+              {
+                Clause r;
+                groupLiterals(c, j, sub, r);
+                if(!clauseExists(cnf, r) && !clauseTautology(r))
+                  {
+                    cnf.push_back(r);
+                    cout << "Grouping applied: " << k << endl;
+                    cout << "Parent clause: " << c << endl;
+                    cout << "Substitution: " << sub << endl;
+                    cout << "Grouped clause: " << r << endl;
+                  //  cout << cnf << endl;
+                    ret = true;
+                  }
+              }
+          }
+        else if(c[i]->getType() == BaseFormula::T_DISEQUAL &&
+                     c[j]->getType() == BaseFormula::T_DISEQUAL)
+         {
+            if(unify(c[i], c[j], sub))
+              {
+                Clause r;
+                groupLiterals(c, j, sub, r);
+                if(!clauseExists(cnf, r) && !clauseTautology(r))
+                  {
+                    cnf.push_back(r);
+                    cout << "Grouping applied: " << k << endl;
+                    cout << "Parent clause: " << c << endl;
+                    cout << "Substitution: " << sub << endl;
+                    cout << "Grouped clause: " << r << endl;
+                  //  cout << cnf << endl;
+                    ret = true;
+                  }
+              }
+         }
       }
   return ret;
 }
-  
+
 bool groupingFound(CNF & cnf, unsigned & k)
 {
   bool ret = false;
   while(k < cnf.size())
     {
       if(tryGroupLiterals(cnf, k))
-	{	  
-	  ret = true;
-	}      
+        {
+          ret = true;
+        }
       k++;
     }
   return ret;
@@ -1447,9 +1626,9 @@ bool resolution(const CNF & cnf)
   unsigned s = 0;
   while(groupingFound(vcnf, k) || resolventFound(vcnf, i, j))
     {
-      for(; s < vcnf.size(); s++)	
-	if(vcnf[s].size() == 0)
-	  return false;
+      for(; s < vcnf.size(); s++)
+        if(vcnf[s].size() == 0)
+          return false;
     }
 
   return true;

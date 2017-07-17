@@ -492,7 +492,7 @@ void resolveClauses(const Clause & c1, const Clause & c2,
 /* Ispituje da li je moguce primeniti pravilo rezolucije nad klauzama k i l
    i ako je moguce, primenjuje ga na sve moguce nacine i dodaje dobijene klauze
    u CNF */
-bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l);
+bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB);
 
 /* Ispituje da li je moguce naci dve klauze nad kojima se moze primeniti
    pravilo rezolucije, i primenjuje ga ako je moguce, vracajuci rezolventnu
