@@ -52,7 +52,7 @@ Signature sig;
 input  : formula ';'
        {
          parsed_formula = Formula($1);
-		 return 0;
+         return 0;
        }
        ;
 

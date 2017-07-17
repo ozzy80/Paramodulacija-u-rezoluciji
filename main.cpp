@@ -10,7 +10,7 @@ extern Signature sig;
 
 int main()
 {
-         Signature s;
+         /*Signature s;
          Substitution sub;
          s.addPredicateSymbol("=", 2);
          s.addPredicateSymbol("~=", 2);
@@ -54,7 +54,7 @@ int main()
          cnf[3].push_back(nb);
 
          Formula arb = make_shared<Disequality>(s, a, b);
-         cnf[4].push_back(arb);
+         cnf[4].push_back(arb);*/
 
            /*8) f(a, w) = w     (2, 5)
            9) f(w, a) = w     (3, 5)
@@ -69,13 +69,29 @@ int main()
            cnf[5].push_back(fawEw);
            cnf[6].push_back(fwbEw);*/
 
-           if(resolution(cnf))
+           /*if(resolution(cnf))
              {
                cout << "CNF satisfiable!" << endl;
              }
            else
              {
                cout << "CNF unsatisfiable!" << endl;
-             }
+             }*/
+
+    yyparse();
+
+    if(parsed_formula.get() != 0)
+      cout << parsed_formula;
+
+    cout << endl;
+    cout << parsed_formula->simplify()->nnf() << endl;
+    cout << parsed_formula->simplify()->nnf()->pullquants()->prenex() << endl;
+    cout << parsed_formula->simplify()->nnf()->pullquants()->prenex()->skolem(sig) << endl;
+
+    /*pf = f->simplify()->nnf()->pullquants()->prenex();
+    cout << pf << endl;
+    pf = f->simplify()->nnf()->pullquants()->prenex()->skolem(s);*/
+
+
   return 0;
 }

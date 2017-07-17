@@ -125,12 +125,15 @@ public:
   virtual void printTerm(ostream & ostr) const;
   virtual bool equalTo(const Term & t) const;
   virtual void getVars(VariableSet & vars) const;
-  virtual Term substitute(const Substitution & sub); 
+  virtual Term substitute(const Substitution & sub);
 };
 
 
 class BaseFormula;
 typedef std::shared_ptr<BaseFormula> Formula;
+
+typedef vector<Formula> LiteralList;
+typedef vector<LiteralList> LiteralListList;
 
 /* Apstraktna klasa kojom se predstavljaju formule */
 class BaseFormula : public enable_shared_from_this<BaseFormula> {
@@ -169,6 +172,13 @@ public:
 
   Formula substitute(const Variable & v, const Term & t);
 
+  virtual Formula simplify() = 0;
+  virtual Formula nnf() = 0;
+  virtual Formula pullquants() = 0;
+  virtual Formula prenex() = 0;
+  virtual Formula skolem(Signature & s, vector<Variable> && vars = vector<Variable>());
+  virtual LiteralListList listCNF() = 0;
+
   virtual ~BaseFormula() {}
 };
 
@@ -179,6 +189,10 @@ class AtomicFormula : public BaseFormula {
 
 public:
   virtual unsigned complexity() const;
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
 };
 
 /* Klasa predstavlja logicke konstante (True i False) */
@@ -196,6 +210,7 @@ class True : public LogicConstant {
 public:
   virtual void printFormula(ostream & ostr) const;
   virtual Type getType() const;
+  virtual LiteralListList listCNF();
 };
 
 /* Klasa predstavlja logicku konstantu False */
@@ -204,6 +219,7 @@ class False : public LogicConstant {
 public:
   virtual void printFormula(ostream & ostr) const;
   virtual Type getType() const; 
+  virtual LiteralListList listCNF();
 };
 
 /* Klasa predstavlja atom, koji za razliku od iskazne logike ovde ima
@@ -232,6 +248,7 @@ public:
  
   virtual void getVars(VariableSet & vars, bool free) const;
   virtual Formula substitute(const Substitution & sub);
+  virtual LiteralListList listCNF();
 };
 
 class Equality : public Atom {
@@ -286,6 +303,12 @@ public:
   virtual void printFormula(ostream & ostr) const; 
   virtual Type getType() const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual LiteralListList listCNF();
 };
 
 /* Klasa predstavlja sve binarne veznike */
@@ -307,7 +330,13 @@ public:
   using BinaryConjective::BinaryConjective;
   virtual void printFormula(ostream & ostr) const;
   virtual Type getType() const; 
-  virtual Formula substitute(const Substitution & sub); 
+  virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual LiteralListList listCNF();
  };
 
 
@@ -318,6 +347,12 @@ public:
   virtual void printFormula(ostream & ostr) const;
   virtual Type getType() const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual LiteralListList listCNF();
 };
 
 /* Klasa predstavlja implikaciju */
@@ -327,6 +362,12 @@ public:
   virtual void printFormula(ostream & ostr) const;
   virtual Type getType() const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual LiteralListList listCNF();
 };
 
 
@@ -338,6 +379,12 @@ public:
   virtual void printFormula(ostream & ostr) const; 
   virtual Type getType() const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual LiteralListList listCNF();
 };
 
 /* Klasa predstavlja kvantifikovane formule */
@@ -353,6 +400,7 @@ public:
   virtual unsigned complexity() const;
   virtual bool equalTo(const Formula & f) const;
   virtual void getVars(VariableSet & vars, bool free) const;
+  virtual LiteralListList listCNF();
 };
 
 
@@ -363,6 +411,12 @@ public:
   virtual Type getType() const;
   virtual void printFormula(ostream & ostr) const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual Formula skolem(Signature & s, vector<Variable> && vars);
 };
 
 
@@ -373,7 +427,28 @@ public:
   virtual Type getType() const;
   virtual void printFormula(ostream & ostr) const;
   virtual Formula substitute(const Substitution & sub);
+
+  virtual Formula simplify();
+  virtual Formula nnf();
+  virtual Formula pullquants();
+  virtual Formula prenex();
+  virtual Formula skolem(Signature & s, vector<Variable> && vars);
 };
+
+/*!*/
+template <typename T1, typename T2>
+Variable getUniqueVariable(const T1 & e1, const T2 & e2)
+{
+  static unsigned i = 0;
+  
+  Variable v;
+  
+  do {    
+    v = string("uv") + to_string(++i);
+  } while(e1->containsVariable(v) || e2->containsVariable(v));
+  
+  return v;
+}
 
 /* Funkcija vraca varijablu koja se ne pojavljuje ni u f ni u jednom
    od termova iz ts */
