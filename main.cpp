@@ -37,7 +37,7 @@ int main()
 	LiteralListList cnfLista = skl->listCNF();
 	cout << cnfLista << endl << endl;
 
-	cout << (resolution(cnfLista) ? "SAT" : "UNSAT") << endl;
+	//cout << (resolution(cnfLista) ? "SAT" : "UNSAT") << endl;
 
   return 0;
 }
