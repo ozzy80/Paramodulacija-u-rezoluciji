@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
   cout << "CNF:\t\t";
   LiteralListList cnfLista = skl->listCNF();
   cout << cnfLista << endl << endl;
-
+  
   cout << (resolution(cnfLista) ? "SAT" : "UNSAT") << endl;
 
   return 0;

@@ -653,6 +653,26 @@ Formula Not::nnf() {
     return make_shared<Forall>(
         exists_op->getVariable(),
         make_shared<Not>(exists_op->getOperand())->nnf());
+  } 
+  
+   /* Primena pravila ~(A = B) === A ~= B */
+  else if (_op->getType() == T_EQUAL) {
+    Equality *equality_op = (Equality *)_op.get();
+
+    return make_shared<Disequality>(
+        equality_op->getSignature(),
+        equality_op->getLeftOperand(),                            
+        equality_op->getRightOperand());
+  } 
+  
+   /* Primena pravila ~(A ~= B) === A = B */
+  else if (_op->getType() == T_DISEQUAL) {
+    Disequality *equality_op = (Disequality *)_op.get();
+
+    return make_shared<Equality>(
+        equality_op->getSignature(),
+        equality_op->getLeftOperand(),                            
+        equality_op->getRightOperand());
   } else {
     return shared_from_this();
   }
