@@ -10,7 +10,7 @@ extern Signature sig;
 
 int main()
 {
-         Signature s;
+         /*Signature s;
          Substitution sub;
          s.addPredicateSymbol("=", 2);
          s.addPredicateSymbol("~=", 2);
@@ -55,14 +55,14 @@ int main()
 
          Formula arb = make_shared<Disequality>(s, a, b);
          cnf[4].push_back(arb);
-
+*/
            /*8) f(a, w) = w     (2, 5)
            9) f(w, a) = w     (3, 5)
            10) f(b, w) = w    (2, 6)
            11) f(w, b) = w    (3, 6)
            12) a = b          (Paramodulacija, 11, 8)*/
 
-           Term faw = make_shared<FunctionTerm>(s, "f", vector<Term>{{a,w}});
+          /* Term faw = make_shared<FunctionTerm>(s, "f", vector<Term>{{a,w}});
            Formula fawEw = make_shared<Equality>(s, faw, w);
            Term fwb = make_shared<FunctionTerm>(s, "f", vector<Term>{{w,b}});
            Formula fwbEw = make_shared<Equality>(s, fwb, w);
@@ -76,9 +76,9 @@ int main()
            else
              {
                cout << "CNF unsatisfiable!" << endl;
-             }
+             }*/
 
-    /*yyparse();
+    yyparse();
 
     if(parsed_formula.get() != 0)
       cout << parsed_formula;
@@ -86,9 +86,31 @@ int main()
     cout << endl;
     cout << parsed_formula->simplify()->nnf() << endl;
     cout << parsed_formula->simplify()->nnf()->pullquants()->prenex() << endl;
-    cout << parsed_formula->simplify()->nnf()->pullquants()->prenex()->skolem(sig) << endl;
-    */
+	
+	Formula skl = parsed_formula->simplify()->nnf()->pullquants()->prenex()->skolem(sig);
+    cout << skl << endl;
 
+	while(skl->getType() == BaseFormula::T_FORALL)
+		skl = ((Forall*)skl.get())->getOperand();
+
+	cout << skl << endl;
+
+	LiteralListList cnfLista = skl->listCNF();
+	cout << cnfLista << endl;
+
+	int i = cnfLista.size();
+	int ctr = 0;
+	//izgleda da moze u resolution da se direktno ubaci cnfLista?
+	CNF cnf(i);
+
+	for(auto x : cnfLista)
+	{
+		for(auto y : x)
+			cnf[ctr].push_back(y);
+		ctr++;
+	}
+	cout << cnf << endl;
+	cout << resolution(cnfLista) << endl;
 
   return 0;
 }

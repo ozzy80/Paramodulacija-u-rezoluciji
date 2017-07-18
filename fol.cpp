@@ -87,8 +87,10 @@ Formula Forall::substitute(const Substitution & sub)
 
   /* Proveravamo da li se varijabla _v nalazi u bar nekom od termova */
   bool contained = false;
-  for(unsigned i = 0; !contained || i < subnv.size(); i++)
+  for(unsigned i = 0; i < subnv.size(); i++) {
     contained = subnv[i].second->containsVariable(_v);
+	if(contained) break;
+  }
 
   /* Ako neki od termova sadrzi kvantifikovanu varijablu, tada moramo najpre
      preimenovati kvantifikovanu varijablu (nekom varijablom koja
@@ -122,8 +124,10 @@ Formula Exists::substitute(const Substitution & sub)
   
   /* Proveravamo da li se varijabla _v nalazi u bar nekom od termova */
   bool contained = false;
-  for(unsigned i = 0; !contained || i < subnv.size(); i++)
+  for(unsigned i = 0; i < subnv.size(); i++) {
     contained = subnv[i].second->containsVariable(_v);
+	if(contained) break;
+  }
   
   /* Ako neki od termova sadrzi kvantifikovanu varijablu, tada moramo najpre
      preimenovati kvantifikovanu varijablu (nekom varijablom koja
@@ -1333,7 +1337,6 @@ FunctionSymbol getUniqueFunctionSymbol(const Signature & s)
 
 Formula BaseFormula::skolem(Signature & s, vector<Variable> && vars)
 {
-    cout << "aaaaaaa" << endl;
   /* Podrazumevano, za formulu bez kvantifikatora, ne radimo nista */
   return shared_from_this();
 }
@@ -1375,8 +1378,6 @@ Formula Exists::skolem(Signature & s, vector<Variable> && vars)
 
   /* Zamenjujemo u podformuli y -> f(x1,...,xk), a zatim nastavljamo
      rekurzivno skolemizaciju u podformuli. */
-  cout << _v << " " << t << endl;
-
   Formula tmp = _op->substitute(_v, t);
 
   return tmp->skolem(s, std::move(vars));
