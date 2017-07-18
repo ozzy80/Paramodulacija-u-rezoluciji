@@ -1,0 +1,1 @@
+f(a,W)=W & f(W,a)=W & f(b,W)=W & f(W,b)=W & a~=b ;

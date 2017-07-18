@@ -484,7 +484,7 @@ void Iff::printFormula(ostream & ostr) const
   
   _op1->printFormula(ostr);
   
-  ostr << " => ";
+  ostr << " <=> ";
 
   if(op2_type == T_IFF)
     ostr << "(";
@@ -1849,13 +1849,16 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
                                   c2[j]->getType() == BaseFormula::T_EQUAL))
                {
                 Substitution sub;
-                Equality* tmp = (Equality*)c1[i].get();
                 Formula reverse;
 
-                if(c1[i]->getType() == BaseFormula::T_EQUAL)
+                if(c1[i]->getType() == BaseFormula::T_EQUAL) {
+					Equality* tmp = (Equality*)c1[i].get();
                     reverse = make_shared<Equality>(tmp->getSignature(), tmp->getRightOperand(), tmp->getLeftOperand());
-                else
+				}
+                else {
+					Disequality* tmp = (Disequality*)c1[i].get();
                     reverse = make_shared<Disequality>(tmp->getSignature(), tmp->getRightOperand(), tmp->getLeftOperand());
+				}
 
                 if(unify(c1[i], oppositeLiteral(c2[j]), sub) || unify(reverse, oppositeLiteral(c2[j]), sub)){
                          Clause r;
@@ -1987,7 +1990,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
             }
             else if(c2[j]->getType() == BaseFormula::T_EQUAL)
             {
-                vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
+                vector<Term> c2n = ((Equality*)c2[j].get())->getOperands();
                 for(unsigned ii=0; ii < c2n.size(); ++ii)
                 {
                     if(unify(t, c2n[ii], sub))
@@ -2036,7 +2039,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
             }
             else if(c2[j]->getType() == BaseFormula::T_DISEQUAL)
              {
-                 vector<Term> c2n = ((Atom*)c2[j].get())->getOperands();
+                 vector<Term> c2n = ((Disequality*)c2[j].get())->getOperands();
                  for(unsigned ii=0; ii < c2n.size(); ++ii)
                  {
                      if(unify(t, c2n[ii], sub))
@@ -2195,7 +2198,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
             }
             else if(c1[i]->getType() == BaseFormula::T_EQUAL)
             {
-                vector<Term> c1n = ((Atom*)c1[i].get())->getOperands();
+                vector<Term> c1n = ((Equality*)c1[i].get())->getOperands();
                 for(unsigned ii=0; ii < c1n.size(); ++ii)
                 {
                     if(unify(t, c1n[ii], sub))
@@ -2244,7 +2247,7 @@ bool tryResolveClauses(CNF & cnf, unsigned k, unsigned l, bool &prematureB)
             }
             else if(c1[i]->getType() == BaseFormula::T_DISEQUAL)
              {
-                 vector<Term> c1n = ((Atom*)c1[i].get())->getOperands();
+                 vector<Term> c1n = ((Disequality*)c1[i].get())->getOperands();
                  for(unsigned ii=0; ii < c1n.size(); ++ii)
                  {
                      if(unify(t, c1n[ii], sub))
