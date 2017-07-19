@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
   cout << "Prenex:\t\t";
   cout << parsed_formula->simplify()->nnf()->prenex() << endl;
-
+  
   Formula skl = parsed_formula->simplify()->nnf()->prenex()->skolem(sig);
   cout << "Skolem:\t\t";
   cout << skl << endl;
@@ -53,6 +53,6 @@ int main(int argc, char **argv) {
   cout << cnfLista << endl << endl;
   
   cout << (resolution(cnfLista) ? "SAT" : "UNSAT") << endl;
-
+  
   return 0;
 }

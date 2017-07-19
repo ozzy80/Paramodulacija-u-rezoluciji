@@ -1,0 +1,36 @@
+Rezolucija
+
+1)
+    (Ax)((L(x) => B(x)) /\ (Ex)L(x)) => (Ex)B(x)
+
+2)
+    (Ax)(C(x) => W(x) /\ R(x)) /\ (Ex)(C(x) /\ Q(x)) /\ ~(Ex)(Q(x) /\ R(x))
+    
+3)(B3)
+    ((Ax)(p(x) => q(x)) /\
+    (Ax)(q(x) => s(x)) /\
+    (Ax)(r(x) => s(x)) /\
+    (Ax)(p(x) \/ r(x)))     /\ ~(Ax)s(x)
+    
+4)
+    (Ax)(Ay)A(x,y) => (Ex)(Ay)A(x,y)
+    
+5)
+    (Ax)(Ey)(L(x) => B(y)) &
+    (Ax)(Ey)(B(x) => Y(y)) &
+    ~(Ax)(Ey)(L(x) => Y(y))
+
+    
+Rezolucija sa paramodulacijom
+
+6)
+    (Ax)(X = X) => (Ax)(f(X) = f(X))
+    
+
+7)
+    (Ax)p(f(a), x) => (Ey)x = f(y)
+    
+    
+10) 5
+    (Ax)(n(x) => (Ay)(f(x,y) = y /\ f(y,x) = y)) /\
+    (Ex)(Ey)(n(x) /\ n(y) /\ x != y)

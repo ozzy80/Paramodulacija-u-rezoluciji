@@ -24,7 +24,7 @@ Term VariableTerm::substitute(const Substitution &sub) {
 
 Term FunctionTerm::substitute(const Substitution &sub) {
   vector<Term> sub_ops;
-
+  
   for (unsigned i = 0; i < _ops.size(); i++)
     sub_ops.push_back(_ops[i]->substitute(sub));
 
@@ -649,7 +649,7 @@ Formula Not::nnf() {
   /* Primena pravila ~(exists x) A === (forall x) ~A */
   else if (_op->getType() == T_EXISTS) {
     Exists *exists_op = (Exists *)_op.get();
-
+    
     return make_shared<Forall>(
         exists_op->getVariable(),
         make_shared<Not>(exists_op->getOperand())->nnf());
@@ -658,21 +658,21 @@ Formula Not::nnf() {
    /* Primena pravila ~(A = B) === A ~= B */
   else if (_op->getType() == T_EQUAL) {
     Equality *equality_op = (Equality *)_op.get();
-
+    
     return make_shared<Disequality>(
-        equality_op->getSignature(),
+        ((Atom *)_op.get())->getSignature(),
         equality_op->getLeftOperand(),                            
-        equality_op->getRightOperand());
+        equality_op->getRightOperand()); 
   } 
   
    /* Primena pravila ~(A ~= B) === A = B */
   else if (_op->getType() == T_DISEQUAL) {
     Disequality *equality_op = (Disequality *)_op.get();
-
+   
     return make_shared<Equality>(
-        equality_op->getSignature(),
+        ((Atom *)_op.get())->getSignature(),
         equality_op->getLeftOperand(),                            
-        equality_op->getRightOperand());
+        equality_op->getRightOperand()); 
   } else {
     return shared_from_this();
   }
@@ -680,7 +680,8 @@ Formula Not::nnf() {
 
 Formula And::nnf() { return make_shared<And>(_op1->nnf(), _op2->nnf()); }
 
-Formula Or::nnf() { return make_shared<Or>(_op1->nnf(), _op2->nnf()); }
+Formula Or::nnf() {
+	return make_shared<Or>(_op1->nnf(), _op2->nnf()); }
 
 Formula Imp::nnf() {
   /* Eliminacija implikacije, pa zatim rekurzivna primena nnf()-a */
@@ -1226,7 +1227,7 @@ Formula Exists::skolem(Signature &s, vector<Variable> &&vars) {
   /* Zamenjujemo u podformuli y -> f(x1,...,xk), a zatim nastavljamo
      rekurzivno skolemizaciju u podformuli. */
   Formula tmp = _op->substitute(_v, t);
-
+  
   return tmp->skolem(s, std::move(vars));
 }
 
@@ -2421,6 +2422,8 @@ bool Disequality::equalTo(const Formula &f) const {
 
 Formula Disequality::substitute(const Substitution &sub) {
   vector<Term> sub_ops;
+  
+  //cout << "USAO DEEQUALITY " << _ops.size() <<  endl;
 
   for (unsigned i = 0; i < _ops.size(); i++)
     sub_ops.push_back(_ops[i]->substitute(sub));

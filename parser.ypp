@@ -163,12 +163,14 @@ atom : VARIABLE
      | term EQ term
      {
        sig.addPredicateSymbol(*$2, 2);
+       sig.addPredicateSymbol("~=", 2); //zbog negacije = dodajemo
        $$ = new Equality(sig, Term($1), Term($3));
        delete $2;
      }
      | term NEQ term
      {
        sig.addPredicateSymbol(*$2, 2);
+       sig.addPredicateSymbol("=", 2);  //zbog negacije ~= dodajemo
        $$ = new Disequality(sig, Term($1), Term($3));
        delete $2;
      }
