@@ -8,7 +8,8 @@ extern int yyparse();
 /* Ovaj pokazivac ce nakon parsiranja dobiti vrednost
    adrese parsirane formule. */
 extern Formula parsed_formula;
-// Definisana u parser.ypp
+
+/* Definisana u parser.ypp */
 extern Signature sig;
 
 bool debugFlag = false;

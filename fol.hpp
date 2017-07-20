@@ -258,6 +258,7 @@ public:
   virtual LiteralListList listCNF();
 };
 
+/* Klasa koja obuhvata jednakost */
 class Equality : public Atom {
 public:
   Equality(const Signature &s, const Term &lop, const Term &rop)
@@ -274,6 +275,7 @@ public:
   virtual void printFormula(ostream &ostr) const;
 };
 
+/* Klasa koja obuhvata nejednakost */
 class Disequality : public Atom {
 public:
   Disequality(const Signature &s, const Term &lop, const Term &rop)
