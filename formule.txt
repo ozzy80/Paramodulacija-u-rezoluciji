@@ -30,7 +30,11 @@ Rezolucija sa paramodulacijom
 7)
     (Ax)p(f(a), x) => (Ey)x = f(y)
     
+8)
+    Ax (x = x) /\
+    AuAvAw (u = v & w = v ) => u = w)
+    => AxAy (x = y) => (y = x)
     
-10) 5
+9) 5
     (Ax)(n(x) => (Ay)(f(x,y) = y /\ f(y,x) = y)) /\
     (Ex)(Ey)(n(x) /\ n(y) /\ x != y)

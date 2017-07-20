@@ -702,12 +702,25 @@ Formula Exists::nnf() { return make_shared<Exists>(_v, _op->nnf()); }
 
 // POMOCNE FUNKCIJE ZA BARATANJE LISTAMA --------------------------------
 
-/* Funkcija nadovezuje dve liste */
-template <typename T> T concatLists(const T &c1, const T &c2) {
-  T c = c1;
+/* Funkcija nadovezuje u okviru jedne klauze */
+LiteralList concatLists(const LiteralList &c1, const LiteralList &c2) {
+  LiteralList c = c1;
 
-  for (auto it = c2.begin(), it_end = c2.end(); it != it_end; ++it)
-    c.push_back(*it);
+  for (auto it = c2.begin(), it_end = c2.end(); it != it_end; ++it){
+      if(!clauseContainsLiteral(c, *it) && !clauseTautology(c, *it))
+        c.push_back(*it);
+  }
+ 
+  return c;
+}
+
+/* Funkcija nadovezuje dve liste */
+LiteralListList concatLists(const LiteralListList &c1, const LiteralListList &c2) {
+  LiteralListList c = c1;
+
+  for (auto it = c2.begin(), it_end = c2.end(); it != it_end; ++it){
+      c.push_back(*it);
+  }
 
   // Krace:
   // c.resize(c1.size() + c2.size());
@@ -719,16 +732,24 @@ template <typename T> T concatLists(const T &c1, const T &c2) {
   return c;
 }
 
+
+
 /* Funkcija nadovezuje svaku listu literala iz c1 sa svakom listom literala
    iz c2 i sve takve liste literala smesta u rezultujucu listu listi c */
 LiteralListList makePairs(const LiteralListList &c1, const LiteralListList &c2)
 
 {
   LiteralListList c;
+  LiteralList tmp;
 
-  for (auto &l1 : c1)
-    for (auto &l2 : c2)
-      c.push_back(concatLists(l1, l2));
+  for (auto &l1 : c1){
+    for (auto &l2 : c2){
+        tmp = concatLists(l1, l2);
+        if((tmp.size() > 0) && !clauseExists(c, tmp)){
+            c.push_back(tmp);
+        }
+    }
+  }
   return c;
 }
 
@@ -1519,6 +1540,19 @@ bool clauseTautology(const Clause &c) {
       return true;
 
   return false;
+}
+
+bool clauseTautology(Clause &c,  const Formula &f) {
+  
+  bool tautology = false;
+  for (unsigned i = 0; i < c.size(); i++){
+    if (f->equalTo(oppositeLiteral(c[i]))){
+        removeLiteralFromClause(c, i);
+        tautology = true;
+    }
+  }
+  
+  return tautology;
 }
 
 bool clauseExists(const CNF &cnf, const Clause &c) {

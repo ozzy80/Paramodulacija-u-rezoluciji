@@ -538,6 +538,10 @@ Formula oppositeLiteral(const Formula &l);
    A i njegovu negaciju ~A) */
 bool clauseTautology(const Clause &c);
 
+/* Ispituje da li je klauza c tautologija (tj. da li sadzi neki atom
+   A i njegovu negaciju f) */
+bool clauseTautology(Clause &c,  const Formula &f);
+
 /* Proverava da li u skupu postoji klauza koja je podskup date
    klauza c */
 bool clauseExists(const CNF &cnf, const Clause &c);
